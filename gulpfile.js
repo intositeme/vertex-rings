@@ -2,34 +2,37 @@
 
 // Constant
 var FOLDER = 'bin/';
-var PROXY = 'vertex.localhost.com';
+var PROXY = 'http://localhost:3000';
 var BASE_FOLDER = './src/';
 
 // Gulp plugins
 var gulp = require('gulp');
-var jade = require('gulp-jade');
-var data = require('gulp-data');
-var sass = require('gulp-sass');
-var autoprefixer = require('gulp-autoprefixer');
-var sourcemaps = require('gulp-sourcemaps');
-var stripDebug = require('gulp-strip-debug');
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
-var newer = require('gulp-newer');
-var imagemin = require('gulp-imagemin');
-var pngquant = require('imagemin-pngquant');
-var browserSync = require('browser-sync');
-var browserify = require('browserify');
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var nodemon = require('gulp-nodemon');
+var nodemon = require('gulp-nodemon'); // Node Server watch
 var argv = require('yargs').argv;
+var file = require('gulp-file');
+var data = require('gulp-data');
 var gulpif = require('gulp-if');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var disc = require('disc');
 var path = require('path');
-var file = require('gulp-file');
+var fs = require('fs');
+var mkdirp = require('mkdirp');
+var newer = require('gulp-newer');
+// HTML Plugins
+var jade = require('gulp-jade');
+// CSS Plugins
+var sass = require('gulp-sass');
+var autoprefixer = require('gulp-autoprefixer');
+var imagemin = require('gulp-imagemin');
+var pngquant = require('imagemin-pngquant');
+// JS Plugins
+var browserify = require('browserify');
+var browserSync = require('browser-sync');
+var sourcemaps = require('gulp-sourcemaps');
+var stripDebug = require('gulp-strip-debug');
+var jshint = require('gulp-jshint');
+var uglify = require('gulp-uglify');
 var babelify = require('babelify')
 
 // Gulp Default
@@ -101,6 +104,7 @@ var inputs = scripts.map( function(script) {
 var outputs = scripts.map( function(script) {
     return ''+FOLDER+'js/' + script;
 });
+
 //
 // Lint js scripts
 gulp.task('jshint', function() {
@@ -112,10 +116,7 @@ gulp.task('jshint', function() {
 
 //
 // Bundle up js scripts
-// 
-
 gulp.task('bundle', ['jshint'], function() {
-
     // make folder
     mkdirp(''+FOLDER+'js', function (err) {
         if (err) console.error(err)
@@ -184,7 +185,7 @@ gulp.task('watch', function () {
 // Setup BrowserSync
 gulp.task('browser-sync',['templates', 'nodemon'], function() {
      browserSync.init(null, {
-        proxy: "http://localhost:3000",
+        proxy: PROXY,
         files: ["bin/**/*.*"],
         browser: "google chrome",
         port: 7000,
