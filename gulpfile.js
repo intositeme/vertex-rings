@@ -83,11 +83,18 @@ gulp.task('templates', function() {
 });
 
 // Rebuild Jade, Scripts & do page reload
-gulp.task('rebuild', ['templates', 'bundle'], function () {
+gulp.task('rebuild', ['templates', 'bundle', 'styles'], function () {
     browserSync.reload();
 });
 
-
+/**
+ * CSS Proccesses
+ */
+gulp.task('styles', function() {
+    gulp.src(BASE_FOLDER + 'sass/**/*.scss')
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(FOLDER + 'css/'));
+});
 /**
  * Setup Script Processes
  */
@@ -177,7 +184,7 @@ gulp.task('bundle', ['jshint'], function() {
 gulp.task('watch', function () {
     gulp.watch([
         BASE_FOLDER + 'js/**/*.js',
-        BASE_FOLDER + 'scss/**/*.scss',
+        BASE_FOLDER + 'sass/**/*.scss',
         BASE_FOLDER + 'jade/**/*.jade'
     ], ['rebuild']);
 });
