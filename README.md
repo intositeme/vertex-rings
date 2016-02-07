@@ -8,4 +8,4 @@ Node & Npm required
 2. run `sudo npm install -g gulp gulp-cli`
 3. run `npm install`
 4. Run `gulp serve`
-5. Go to browser and load [http://localhost:7000](http://localhost:7000 "title" target="_blank")
+5. Go to browser and load [http://localhost:7000](http://localhost:7000 "title"  target="_blank")
