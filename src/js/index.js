@@ -62,7 +62,7 @@ var render = function () {
 	renderer.render(scene, camera);
 	var time = performance.now();
 	if (circlRawMesh) {
-		// circlRawMesh.rotation.y = time * 0.0005;
+		//circlRawMesh.rotation.y = time * 0.0005;
 		circlRawMesh.material.uniforms.time.value = time * 0.005;
 
 	}
@@ -136,9 +136,10 @@ function drawCircle () {
 function drawRawCircle () {
 	var triangles = 500;
 	var geometry = new THREE.BufferGeometry();
-	var resolution = 128;
+	var resolution = 300;
 	var amplitude = 4;
 	var innerThickness = 0.4;
+	var thicknessAmp = 2;
 	var size = 360 / resolution;
 
 	var colors = new Float32Array( resolution * 4 * 2 );
@@ -149,13 +150,13 @@ function drawRawCircle () {
 	    var segment = ( i * size ) * Math.PI / 180;
 	    var segment2 = ( (i  ) * size +  size*.5 ) * Math.PI / 180;
 	    //outer ring
-	    vertices[ i * 6      ] = Math.cos( segment ) * amplitude;
-	    vertices[ i * 6 +  1 ] = Math.sin( segment ) * amplitude;
-	    vertices[ i * 6 +  2 ] = 0 ;
+	    vertices[ i * 6      ] = Math.cos( segment ) * amplitude + Math.random() * innerThickness;
+	    vertices[ i * 6 +  1 ] = Math.sin( segment ) * amplitude + Math.random() * innerThickness;
+	    vertices[ i * 6 +  2 ] = Math.random() * thicknessAmp ;
 	    //inner ring
-	    vertices[ i * 6 +  3 ] = Math.cos( segment2 ) * (amplitude - innerThickness);
-	    vertices[ i * 6 +  4 ] = Math.sin( segment2 ) * (amplitude - innerThickness);
-	    vertices[ i * 6 +  5 ] = 0; 
+	    vertices[ i * 6 +  3 ] = Math.cos( segment2 ) * (amplitude - innerThickness* Math.random()) ;
+	    vertices[ i * 6 +  4 ] = Math.sin( segment2 ) * (amplitude - innerThickness* Math.random()) ;
+	    vertices[ i * 6 +  5 ] = Math.random() * thicknessAmp; 
 
 	    // push R G B A for each Vertice Set
 	    var tB = Math.random()+ 0.2;
@@ -181,9 +182,9 @@ function drawRawCircle () {
 		var tI = i*3;
 		var tNewI = i;
 		tNewI = (tNewI >= resolution * 2 -1)? tNewI% resolution * 2 : tNewI;
-		indices[tI] = i;
-		indices[tI+1] = i+1 >= (resolution * 2) -2 ? (i+1)% (resolution * 2 ) : i+1 ;
-		indices[tI+2] = i+2  >= (resolution * 2) -2 ? (i+2)% (resolution * 2 ) : i+2 ;
+		indices[tI] = i + Math.random() ;
+		indices[tI+1] = i+1 >= (resolution * 2) -2 ? (i+1)% (resolution * 2 ) : i+1 + Math.random();
+		indices[tI+2] = i+2  >= (resolution * 2) -2 ? (i+2)% (resolution * 2 ) : i+2  + Math.random();
 	}
 	console.log('indices', indices, indices.length); 
 
@@ -201,7 +202,6 @@ function drawRawCircle () {
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
 		side: THREE.DoubleSide,
 		transparent: true,
-		wireframe: true,
 		wireframeLinewidth: 1
 	} );
 
