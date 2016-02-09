@@ -1,29 +1,58 @@
-//'use strict';
 
 window.$ = require("jquery");
 // TweenMax = require ('gsap');
 // $('h1').css('background-color', "red");
-console.log('hello world');
 window.THREE = require('three');
 
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-// camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100); 
-camera.position.set(0, 0, 10); 
-camera.lookAt(scene.position); 
-camera.position.z = 5;
-scene.add(camera); 
-
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight  );
-renderer.setPixelRatio( window.devicePixelRatio);
-console.log('window.devicePixelRatio', window.devicePixelRatio);
-// 
-
+var sectionHolder = document.querySelectorAll('section.post-content')[0];
+var scene ;
+var camera ;
+var renderer ;
+var raycaster;
 var sphere;
 
-var WIDTH = window.innerWidth;
-var HEIGHT = window.innerHeight;
+var WIDTH ;
+var HEIGHT;
+
+var circlRawMesh;
+
+$(function () {
+
+ 	scene = new THREE.Scene();
+ 	camera = new THREE.PerspectiveCamera( 10, $(sectionHolder).width()  / window.innerHeight, 0.1, 1000 );
+ 	raycaster = new THREE.Raycaster();
+ 	console.log($(sectionHolder).width() );
+ 	camera.position.set(0, 0, 100); 
+	// camera.lookAt(scene.position); 
+	//camera.position.z = 5;
+	scene.add(camera); 
+
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( $(sectionHolder).width() , window.innerHeight  );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setClearColor( 0xF2F3F5, 1);
+	console.log('window.devicePixelRatio', window.devicePixelRatio);
+
+	WIDTH = $(sectionHolder).width();
+	HEIGHT = window.innerHeight;
+	$(sectionHolder).prepend (renderer.domElement);
+	// sectionHolder.appendChild( renderer.domElement );
+	init();
+	// drawCircle();
+	drawRawCircle();
+
+	render();
+});
+
+//sectionHolder.appendChild(renderer.domElement);
+
+// camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100); 
+
+
+
+// 
+
+
 
 
 
@@ -31,9 +60,15 @@ var render = function () {
 	requestAnimationFrame( render );
 
 	renderer.render(scene, camera);
+	var time = performance.now();
+	if (circlRawMesh) {
+		// circlRawMesh.rotation.y = time * 0.0005;
+		circlRawMesh.material.uniforms.time.value = time * 0.005;
+
+	}
+	//console.log(circlRawMesh);
 };
 
-render();
 
 function init () {
 	var geometry = new THREE.Geometry();
@@ -60,14 +95,14 @@ function init () {
 
 	var triangleMesh = new THREE.Mesh(geometry, triangleMaterial); 
     triangleMesh.position.set(-1.5, 0.0, -14.0); 
-    scene.add(triangleMesh); 
+    // scene.add(triangleMesh); 
 }
 
 /**
  * Draw Circle Ring Mesh
  */
 function drawCircle () {
-	var resolution = 16;
+	var resolution = 8;
 	var amplitude = 10;
 	var size = 360 / resolution;
 
@@ -89,28 +124,99 @@ function drawCircle () {
 	console.log ('Vertices', geometry.faces);
 	geometry.computeBoundingSphere();
 
-	var shaderMaterial = new THREE.ShaderMaterial( {
-
-		uniforms: {
-			time: { type: "f", value: 1.0 },
-			resolution: { type: "v2", value: new THREE.Vector2() },
-			color: { type: 'v3', value: new THREE.Vector3(1.0, 1.0, 0.0) }
-		},
-		attributes: {
-			vertexOpacity: { type: 'f', value: [] },
-			size: { type: 'f', value: 1.0 },
-			customColor: { type: 'v3', value: new THREE.Vector3(1.0, 0.0, 0.0) }
-		},
-		vertexShader: document.getElementById( 'vertexshader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
-
-	} );
 
 	var ringMesh = new THREE.Mesh(geometry, material); 
     ringMesh.position.set(-1.5, 0.0, -14.0); 
     scene.add(ringMesh); 
 }
 
-document.body.appendChild( renderer.domElement );
-init();
-drawCircle();
+/**
+ * Draw Raw Buffer Circle Geomertry 
+ */
+function drawRawCircle () {
+	var triangles = 500;
+	var geometry = new THREE.BufferGeometry();
+	var resolution = 128;
+	var amplitude = 4;
+	var innerThickness = 0.4;
+	var size = 360 / resolution;
+
+	var colors = new Float32Array( resolution * 4 * 2 );
+	var vertices = new Float32Array( resolution * 2 * 3   );
+
+
+	for(var i = 0; i < resolution; i++) {
+	    var segment = ( i * size ) * Math.PI / 180;
+	    var segment2 = ( (i  ) * size +  size*.5 ) * Math.PI / 180;
+	    //outer ring
+	    vertices[ i * 6      ] = Math.cos( segment ) * amplitude;
+	    vertices[ i * 6 +  1 ] = Math.sin( segment ) * amplitude;
+	    vertices[ i * 6 +  2 ] = 0 ;
+	    //inner ring
+	    vertices[ i * 6 +  3 ] = Math.cos( segment2 ) * (amplitude - innerThickness);
+	    vertices[ i * 6 +  4 ] = Math.sin( segment2 ) * (amplitude - innerThickness);
+	    vertices[ i * 6 +  5 ] = 0; 
+
+	    // push R G B A for each Vertice Set
+	    var tB = Math.random()+ 0.2;
+		colors[ i * 12        ] = ( tB );
+		colors[ i * 12 +  1   ] = ( tB );
+		colors[ i * 12 +  2   ] = ( tB );
+		colors[ i * 12 +  3   ] = ( Math.random() + 0.2);
+		tB = Math.random()+ 0.2;
+	    // push R G B A for each Vertice Set
+		colors[ i * 12 +  4   ] = ( tB );
+		colors[ i * 12 +  5   ] = ( tB );
+		colors[ i * 12 +  6   ] = ( tB );
+		colors[ i * 12 +  7   ] = ( Math.random() + 0.2);
+		tB = Math.random()+ 0.2;
+		colors[ i * 12 +  8   ] = ( tB );
+		colors[ i * 12 +  9   ] = ( tB );
+		colors[ i * 12 +  10   ] = ( tB );
+		colors[ i * 12 +  11   ] = ( Math.random() + 0.2);
+	}
+
+	var indices = new Uint32Array( resolution * 2 *3   );
+	for ( i = 0; i < resolution * 2 * 3 ; i++) {
+		var tI = i*3;
+		var tNewI = i;
+		tNewI = (tNewI >= resolution * 2 -1)? tNewI% resolution * 2 : tNewI;
+		indices[tI] = i;
+		indices[tI+1] = i+1 >= (resolution * 2) -2 ? (i+1)% (resolution * 2 ) : i+1 ;
+		indices[tI+2] = i+2  >= (resolution * 2) -2 ? (i+2)% (resolution * 2 ) : i+2 ;
+	}
+	console.log('indices', indices, indices.length); 
+
+	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+	geometry.addAttribute( 'normal', new THREE.BufferAttribute( vertices, 3 ) );
+	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 4 ) );
+	geometry.setIndex(  new THREE.BufferAttribute( indices, 1 ) );
+
+	var material = new THREE.RawShaderMaterial( {
+		uniforms: {
+			time: { type: "f", value: 1.0 },
+			mouse: { type: "v2", value: new THREE.Vector2(0.5, 0.5) }
+		},
+		vertexShader: document.getElementById( 'vertexshader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+		side: THREE.DoubleSide,
+		transparent: true,
+		wireframe: true,
+		wireframeLinewidth: 1
+	} );
+
+	var mesh = new THREE.Mesh( geometry, material );
+	mesh.position.set(0.0, 0.0, 0.0); 
+	scene.add( mesh );
+	circlRawMesh = mesh;
+
+	renderer.domElement.onmousemove = function(event){
+	    var tX = ( (event.clientX - this.offsetLeft )/ WIDTH ) * 2 - 1;
+		var tY = 0- ( (event.clientY- this.offsetTop) / HEIGHT ) * 2 + 1;
+
+	    circlRawMesh.material.uniforms.mouse.value.x = tX * 10 ; 
+	    circlRawMesh.material.uniforms.mouse.value.y = tY * 10; 
+	}
+}
+
+
